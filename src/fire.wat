@@ -148,8 +148,11 @@
         i32.add
         i32.load8_u  ;; push img_ptr[pixel_idx + img_width] onto the stack
         
-        ;; Compute the decay by subtracting 1 from the value of the pixel below.
-        i32.const 1
+        ;; Compute the decay by subtracting a random integer between 0 and 3
+        ;; (exclusive)
+        call $rand
+        i32.const 3
+        i32.rem_u       ;; rand % 3
         i32.sub
         local.tee $value
 
