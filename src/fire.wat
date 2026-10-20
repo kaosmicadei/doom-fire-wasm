@@ -126,6 +126,8 @@
       (local $pixel_idx i32)
 
       (local $value i32)
+
+      (local $decay i32)
       
       ;; Calculate the total number of pixels in the image.
       ;; However, we must leave the bottom row out.
@@ -153,6 +155,7 @@
         call $rand
         i32.const 3
         i32.rem_u       ;; rand % 3
+        local.tee $decay
         i32.sub
         local.tee $value
 
@@ -167,9 +170,24 @@
         select
         local.set $value
 
-        ;; store the value in the current pixel
-        global.get $img_ptr
+        ;; To add wind effect we randomly shift the fire value left by subtracting
+        ;; a random integer between 0 and 3 (exclusive) from the pixel index
         local.get $pixel_idx
+        local.get $decay
+        i32.sub
+
+        ;; Ensure the pixel index doesn't go out of bounds
+        local.get $pixel_idx  ;; option for pixel_idx is less than 0
+
+        ;; condition
+        local.get $pixel_idx
+        i32.const 0
+        i32.ge_s
+        
+        select
+
+        ;; store the value in the selected pixel
+        global.get $img_ptr
         i32.add
         local.get $value
         i32.store8
