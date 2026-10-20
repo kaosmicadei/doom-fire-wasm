@@ -123,7 +123,77 @@
     )
 
     (func $spread_the_fire
-      ;; Implementation for spreading the fire goes here.
+      ;; indices
+      (local $row_idx i32)
+      (local $col_idx i32)
+      (local $pixel_idx i32)
+
+      ;; Initialise the row and column indices.
+      i32.const 0
+      local.set $row_idx
+
+      i32.const 0
+      local.set $col_idx
+
+      (loop $loop_row
+        (loop $loop_col
+          ;; get current pixel index
+          ;; canvas[row][col] -> img_ptr[col + (row * width)]
+          local.get $col_idx
+          local.get $row_idx
+          global.get $img_width
+          i32.mul
+          i32.add
+          local.tee $pixel_idx
+
+          ;; get the value of the pixel bellow the current pixel
+          ;; canvas[row+1][col] -> img_ptr[col + (row * width) + width]
+          ;; -> img_ptr[pixel_idx + width]
+          global.get $img_width
+          global.get $img_ptr
+          i32.add
+          i32.add             ;; img_ptr + pixel_idx + width
+          i32.load8_u         ;; pushes img_ptr[pixel_idx + width] to the stack
+
+          ;; Getting current pixel value
+          global.get $img_ptr
+          local.get $pixel_idx
+          i32.add
+          i32.load8_u         ;; pushes img_ptr[pixel_idx] to the stack
+
+          i32.sub             ;; img_ptr[pixel_idx + width] - img_ptr[pixel_idx]
+
+          ;; store the result in the current pixel
+          global.get $img_ptr
+          local.get $pixel_idx
+          i32.add
+          i32.store8
+
+          ;; increment the column index
+          local.get $col_idx
+          i32.const 1
+          i32.add
+          local.tee $col_idx
+
+          ;; check if we reached the end of the column
+          global.get $img_width
+          i32.lt_s
+          br_if $loop_col
+        )
+
+        ;; increment the row index
+        local.get $row_idx
+        i32.const 1
+        i32.add
+        local.tee $row_idx
+
+        ;; check if we reached the row before the last one
+        global.get $img_height
+        i32.const 1
+        i32.sub
+        i32.lt_s
+        br_if $loop_row
+      )
     )
 
     (export "set_image_size" (func $set_image_size))
