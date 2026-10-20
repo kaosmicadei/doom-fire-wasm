@@ -45,13 +45,7 @@
 
         doom_fire.set_fire_size(width, height);
         const fire = new Uint8Array(doom_fire.memory.buffer, doom_fire.img_addr(), width * height);
-        window.fire = fire;
-        doom_fire.fire_starter();
         
-        for (let i = 0; i < 50; i++) {
-            doom_fire.spread_the_fire();
-        }
-
         const canvas = document.getElementById("fire");
         const ctx = canvas.getContext("2d");
 
@@ -61,15 +55,23 @@
         const imageData = ctx.createImageData(width, height);
         const pixels = imageData.data;
 
-        for (let i = 0; i < height * width; i++) {
-            const j = i * 4;
-            pixels[j] = fireColourPalette[fire[i]].r;      // Red
-            pixels[j + 1] = fireColourPalette[fire[i]].g;  // Green
-            pixels[j + 2] = fireColourPalette[fire[i]].b;  // Blue
-            pixels[j + 3] = 255;                           // Alpha
+        function renderFire() {
+            for (let i = 0; i < height * width; i++) {
+                const j = i * 4;
+                pixels[j] = fireColourPalette[fire[i]].r;      // Red
+                pixels[j + 1] = fireColourPalette[fire[i]].g;  // Green
+                pixels[j + 2] = fireColourPalette[fire[i]].b;  // Blue
+                pixels[j + 3] = 255;                           // Alpha
+            }
+            ctx.putImageData(imageData, 0, 0);
         }
 
-        ctx.putImageData(imageData, 0, 0);
+        doom_fire.fire_starter();
+        renderFire();
+        setInterval(() => {
+            doom_fire.spread_the_fire();
+            renderFire();
+        }, 50);
     </script>
 
 </body>
