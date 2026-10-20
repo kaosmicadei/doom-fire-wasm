@@ -6,6 +6,35 @@
     <title>Doom Fire WASM</title>
 </head>
 <body>
+    <canvas id="fire" width="200" height="200"></canvas>
+
+    <script>
+        const canvas = document.getElementById("fire");
+        const ctx = canvas.getContext("2d");
+
+        const width = 200;
+        const height = 200;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const imageData = ctx.createImageData(width, height);
+        const pixels = imageData.data;
+
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const i = (y * width + x) * 4;
+
+                // Create a gradient
+                pixels[i]     = x / width * 255;  // Red
+                pixels[i + 1] = y / height * 255; // Green
+                pixels[i + 2] = 150;              // Blue
+                pixels[i + 3] = 255;              // Alpha
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+    </script>
 
 </body>
 </html>
