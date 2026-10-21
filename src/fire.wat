@@ -68,8 +68,8 @@
       global.set $img_height
     )
 
-    ;; Initialise the bottom row of the image with the maximum value of 36.
-    (func $fire_starter
+    ;; Adjust the intensity of the fire source
+    (func $set_fire_intensity (param $intensity i32)
       (local $total_pixels i32)
       (local $pixel_idx i32)
 
@@ -106,7 +106,7 @@
           global.get $img_ptr
           local.get $pixel_idx
           i32.add                ;; pixel address
-          i32.const 36
+          local.get $intensity
           i32.store8
 
           ;; Increment the pixel index
@@ -121,16 +121,26 @@
       )
     )
 
+    (func $fire_starter
+      i32.const 36
+      call $set_fire_intensity
+    )
+
+    (func $put_out_fire
+      i32.const 0
+      call $set_fire_intensity
+    )
+
     (func $spread_the_fire 
       (local $total_pixels i32)
       (local $pixel_idx i32)
 
+      ;; Auxiliary variable to store the decayed fire value
       (local $value i32)
-
-      (local $decay i32)
       
       ;; Calculate the total number of pixels in the image.
       ;; However, we must leave the bottom row out.
+      ;; total_pixels = (img_height - 1) * img_width
       global.get $img_width
       global.get $img_height
       i32.const 1
@@ -150,43 +160,25 @@
         i32.add
         i32.load8_u  ;; push img_ptr[pixel_idx + img_width] onto the stack
         
-        ;; Compute the decay by subtracting a random integer between 0 and 3
-        ;; (exclusive)
+        ;; Decay the fire by a random number between 0 and 3 (exclusive)
         call $rand
         i32.const 3
-        i32.rem_u       ;; rand % 3
-        local.tee $decay
+        i32.rem_u
         i32.sub
-        local.tee $value
 
-        ;; The value cannot be less than 0.
-        i32.const 0
-        
-        ;; condition
-        i32.const 0
+        ;; $value must be non-negative
+        local.tee $value  ;; a: cond == 1
+        i32.const 0       ;; b: cond == 0
+
         local.get $value
-        i32.lt_s
+        i32.const 0
+        i32.gt_s
 
-        select
+        select           ;; $value > 0 ? a : b
         local.set $value
 
-        ;; To add wind effect we randomly shift the fire value left by subtracting
-        ;; a random integer between 0 and 3 (exclusive) from the pixel index
+        ;; Update the pixel with the new value
         local.get $pixel_idx
-        local.get $decay
-        i32.sub
-
-        ;; Ensure the pixel index doesn't go out of bounds
-        local.get $pixel_idx  ;; option for pixel_idx is less than 0
-
-        ;; condition
-        local.get $pixel_idx
-        i32.const 0
-        i32.ge_s
-        
-        select
-
-        ;; store the value in the selected pixel
         global.get $img_ptr
         i32.add
         local.get $value
@@ -212,6 +204,8 @@
 
     (export "img_addr" (func $img_addr))
     (export "set_fire_size" (func $set_fire_size))
+    (export "set_fire_intensity" (func $set_fire_intensity))
     (export "fire_starter" (func $fire_starter))
     (export "spread_the_fire" (func $spread_the_fire))
+    (export "put_out_fire" (func $put_out_fire))
 )
