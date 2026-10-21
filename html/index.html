@@ -13,8 +13,8 @@
         }
 
         #fire {
-            width: 300px;
-            height: 300px;
+            width: 200px;
+            height: 200px;
             image-rendering: pixelated;
             border: 1px solid black;
         }
@@ -72,11 +72,25 @@
             ctx.putImageData(imageData, 0, 0);
         }
 
-        doom_fire.fire_starter();
-        setInterval(() => {
+        let fps = 5;
+        const stepInterval = 1000 / fps;   // milliseconds per frame
+
+        let lastFrameTime = 0;
+
+        function burn(timeStamp) {
+            requestAnimationFrame(burn);
+
+            if (timeStamp - lastFrameTime < stepInterval) return;
+
+            lastFrameTime = timeStamp - ((timeStamp - lastFrameTime) % stepInterval);
+            
+            // update
             doom_fire.spread_the_fire();
             renderFire();
-        }, 75);
+        }
+
+        doom_fire.fire_starter();
+        requestAnimationFrame(burn);
     </script>
 
 </body>
