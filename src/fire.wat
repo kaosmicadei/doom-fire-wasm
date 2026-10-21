@@ -133,11 +133,24 @@
 
     (func $spread_the_fire 
       (local $total_pixels i32)
+      
       (local $pixel_idx i32)
-      (local $wind_idx i32)    ;; Store the pixel index after wind offset
+
+      ;; In the main loop, the pixel index moves by 1 for each iteration. To
+      ;; update its value, we read the pixel one row below. Instead of computing
+      ;; the address each time, we maintain a separate read_pixel_idx that is
+      ;; always offset from $pixel_idx by img_width that also moves by 1 for each 
+      ;; iteration.
+      (local $read_pixel_idx i32)
+
+      ;; To create the effect of wind moving the fire sideways, update either the
+      ;; current pixel index or a random pixel before it. Since the `pixel_idx`
+      ;; is the counter for the main loop, we keep the random offset in a different
+      ;; variable.
+      (local $wind_idx i32)
 
       (local $value i32)       ;; Store the decayed fire value
-      
+
       ;; Calculate the total number of pixels in the image.
       ;; However, we must leave the bottom row out.
       ;; total_pixels = (img_height - 1) * img_width
@@ -149,22 +162,24 @@
       local.set $total_pixels
 
       i32.const 0
-      local.set $pixel_idx
+      local.tee $pixel_idx
+
+      global.get $img_width
+      i32.add
+      local.set $read_pixel_idx
 
       (loop $pixels
-        ;; get the value of the pixel one row below (pixel_idx + img_width)
+        ;; get the value of the pixel one row below (read_pixel_idx)
         global.get $img_ptr
-        local.get $pixel_idx
-        global.get $img_width
+        local.get $read_pixel_idx
         i32.add
-        i32.add
-        i32.load8_u  ;; push img_ptr[pixel_idx + img_width] onto the stack
+        i32.load8_u  ;; push img_ptr[read_pixel_idx] onto the stack
         
         ;; Decay the fire by a random number between 0 and 3 (exclusive)
         call $rand
         i32.const 3
         i32.rem_u
-        i32.sub
+        i32.sub            ;;  img_ptr[read_pixel_idx] - (rand() % 3)
 
         ;; $value must be non-negative
         local.tee $value  ;; a: cond == 1
@@ -189,18 +204,24 @@
         local.tee $wind_idx    ;; a: cond == 1
         local.get $pixel_idx   ;; b: cond == 0
 
-        ;; cond: wind_idx > 0 0
+        ;; cond: wind_idx > 0
         i32.const 0
         local.get $wind_idx
         i32.lt_s
         
-        select
+        select    ;; wind_idx > 0 ? wind_idx : pixel_idx
 
         ;; Update the pixel with the new value
         global.get $img_ptr
         i32.add
         local.get $value
         i32.store8
+
+        ;; Increment the read pixel index
+        local.get $read_pixel_idx
+        i32.const 1
+        i32.add
+        local.set $read_pixel_idx
 
         ;; increment the pixel index
         local.get $pixel_idx
