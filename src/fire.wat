@@ -134,9 +134,9 @@
     (func $spread_the_fire 
       (local $total_pixels i32)
       (local $pixel_idx i32)
+      (local $wind_idx i32)    ;; Store the pixel index after wind offset
 
-      ;; Auxiliary variable to store the decayed fire value
-      (local $value i32)
+      (local $value i32)       ;; Store the decayed fire value
       
       ;; Calculate the total number of pixels in the image.
       ;; However, we must leave the bottom row out.
@@ -177,8 +177,26 @@
         select           ;; $value > 0 ? a : b
         local.set $value
 
-        ;; Update the pixel with the new value
+        ;; To create the fire effect, we move the pixel index behind by a random 
+        ;; offset between 0 and 3 (exclusive)
         local.get $pixel_idx
+        call $rand
+        i32.const 3
+        i32.rem_u
+        i32.sub                ;; pixel_idx - (rand() % 3)   
+        
+        ;; We need to prevent the pixel index from going out of bounds
+        local.tee $wind_idx    ;; a: cond == 1
+        local.get $pixel_idx   ;; b: cond == 0
+
+        ;; cond: wind_idx > 0 0
+        i32.const 0
+        local.get $wind_idx
+        i32.lt_s
+        select
+        local.tee $pixel_idx
+
+        ;; Update the pixel with the new value
         global.get $img_ptr
         i32.add
         local.get $value

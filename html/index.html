@@ -6,10 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doom Fire WASM</title>
     <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         #fire {
-            width: 500px;
-            height: 500px;
-            /* image-rendering: pixelated; */
+            width: 300px;
+            height: 300px;
+            image-rendering: pixelated;
             border: 1px solid black;
         }
     </style>
@@ -45,7 +51,7 @@
 
         doom_fire.set_fire_size(width, height);
         const fire = new Uint8Array(doom_fire.memory.buffer, doom_fire.img_addr(), width * height);
-        
+        window.fire = fire;
         const canvas = document.getElementById("fire");
         const ctx = canvas.getContext("2d");
 
@@ -67,11 +73,10 @@
         }
 
         doom_fire.fire_starter();
-        renderFire();
         setInterval(() => {
             doom_fire.spread_the_fire();
             renderFire();
-        }, 20);
+        }, 75);
     </script>
 
 </body>
