@@ -7,7 +7,7 @@
     <title>Doom Fire WASM</title>
     <style>
         body {
-            display: flex;
+            display: grid;
             align-items: center;
             justify-content: center;
             background-color: black;
@@ -25,6 +25,11 @@
 
 <body>
     <canvas id="fire" width="100" height="50"></canvas>
+    <div id="controls">
+        <button id="extinguish">Put Out Fire</button>
+        <button id="ignite">Ignite Fire</button>
+        <input id="intensity" type="range" min="0" max="36" value="36">
+    </div>
 
     <script type="module">
         const fireColourPalette = [
@@ -90,6 +95,20 @@
             doom_fire.spread_the_fire();
             renderFire();
         }
+
+        
+        document.getElementById("extinguish").addEventListener("click", () => {
+            doom_fire.put_out_fire();
+            document.getElementById("intensity").value = 0;
+        });
+        document.getElementById("ignite").addEventListener("click", () => {
+            doom_fire.fire_starter();
+            document.getElementById("intensity").value = 36;
+        });
+
+        document.getElementById("intensity").addEventListener("input", (event) => {
+            doom_fire.set_fire_intensity(parseInt(event.target.value));
+        });
 
         doom_fire.fire_starter();
         requestAnimationFrame(burn);
