@@ -15,7 +15,7 @@
         #fire {
             width: 200px;
             height: 200px;
-            image-rendering: pixelated;
+            /* image-rendering: pixelated; */
             border: 1px solid black;
         }
     </style>
@@ -72,7 +72,7 @@
             ctx.putImageData(imageData, 0, 0);
         }
 
-        let fps = 5;
+        let fps = 12;
         const stepInterval = 1000 / fps;   // milliseconds per frame
 
         let lastFrameTime = 0;

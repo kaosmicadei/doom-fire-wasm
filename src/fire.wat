@@ -193,8 +193,8 @@
         i32.const 0
         local.get $wind_idx
         i32.lt_s
+        
         select
-        local.tee $pixel_idx
 
         ;; Update the pixel with the new value
         global.get $img_ptr
